@@ -2,6 +2,8 @@ package chip8.components;
 
 import java.io.File;
 
+import chip8.utils.NumberUtils;
+
 public class Chip8 {
 	
 	/*
@@ -20,17 +22,16 @@ public class Chip8 {
 	
 	private Memory memory = new Memory(Memory.MEMORY_4K);
 	private File program = new File("resources/TETRIS.c8");
-	
 	//Registers
 	
 	private int V[] = new int[16];
 	private int stack[] = new int[16];
-	private short sp;
+	private int sp;
 	private int I;
 	private int pc;
 	
-	private short dt;
-	private short st;
+	private int dt;
+	private int st;
 	
 	
 	public Chip8() {		
@@ -56,13 +57,11 @@ public class Chip8 {
 		//memory.loadProgram(program);
 	}
 	
-	public void emulateCycle() {
-		//Fetch, decode, execute opcode
-				
-		//Fetch opcode from pc and pc+1
-		
+	public void emulateCycle() {				
+		//Fetch		
 		opcode = memory.get(pc) << 8 | memory.get(pc+1);
-		System.out.println(Integer.toHexString(opcode));
+		
+		//Decode and execute
 		
 		executeOpcode(opcode);
 						
@@ -74,13 +73,18 @@ public class Chip8 {
 		System.out.println("I: 0x" + Integer.toHexString(I));
 		System.out.println("SP: 0x" + Integer.toHexString(sp));
 		for(int i = 0; i < V.length; i++) {
-			System.out.println("V"+ Integer.toHexString(i).toUpperCase() + ": " + Integer.toBinaryString(V[i]));
+			System.out.println("V"+ Integer.toHexString(i).toUpperCase() + ": " + Integer.toHexString(V[i]));
 		}
 	}
 	
 	private void executeOpcode(int opcode) {
 		int decodedOp = opcode & 0xF000;
-		int x, y, n, nn, nnn; 
+		int x = (opcode & 0x0F00) >> 8;
+		int y = (opcode & 0x00F0) >> 4;
+		int n = opcode & 0x000F;
+		int nn = opcode & 0x00FF;
+		int nnn = opcode & 0x0FFF;
+
 		switch (decodedOp) {
 		case 0x0000:
 			switch(opcode & 0xFF) {
@@ -93,63 +97,55 @@ public class Chip8 {
 			}
 			break;
 		case 0x1000:
-			nnn = opcode & 0x0FFF;
 			pc = nnn;
 			break;
 		case 0x2000:
 			//TODO Implement 2NNN
 			break;
 		case 0x3000:
-			x = (opcode & 0x0F00) >> 8;
-			nn = opcode & 0x00FF;
 			if(V[x] == nn) {
 				//Skip
-				pc = pc + 2;
+				pc = pc + 4;
 			}
 			break;
 		case 0x4000:
-			x = (opcode & 0x0F00) >> 8;
-			nn = opcode & 0x00FF;
 			if(V[x] != nn) {
 				//Skip
-				pc = pc + 2;
+				pc = pc + 4;
 			}
 			break;
 		case 0x5000:
-			x = (opcode & 0x0F00) >> 8;
-			y = (opcode & 0x00F0) >> 4;
 			if(V[x] == y) {
 				//Skip
-				pc = pc + 2;
+				pc = pc + 4;
 			}
 			break;
 		case 0x6000:
-			x = (opcode & 0x0F00) >> 8;
-			nn = opcode & 0x00FF;
 			V[x] = nn;
+			pc = pc + 2;
 			break;
 		case 0x7000:
-			x = (opcode & 0x0F00) >> 8;
-			nn = opcode & 0x00FF;
 			V[x] += nn;
+			pc = pc + 2;
 			break;
 		case 0x8000:
-			x = (opcode & 0x0F00) >> 8;
-			y = (opcode & 0x00F0) >> 4;
-						
-			switch (opcode & 0x000F) {			
+		switch (n) {			
 			//8XY0, 8XY1...
 			case 0x0000:
 				V[x] = V[y];
+				pc = pc + 2;
 				break;
 			case 0x0001:
 				V[x] |= V[y];
+				pc = pc + 2;
 				break;
 			case 0x0002:
 				V[x] &= V[y];
+				pc = pc + 2;
 				break;
 			case 0x0003:
 				V[x] ^= V[y];
+				pc = pc + 2;
 				break;
 			case 0x0004:
 				if((V[x] + V[y]) < 255) {
@@ -159,6 +155,7 @@ public class Chip8 {
 					V[x] = (V[x] + V[y]) & 0xFF;
 					V[0xF] = 1;
 				}
+				pc = pc + 2;
 				break;
 			case 0x0005:				
 				if(V[x] > V[y]){
@@ -167,10 +164,12 @@ public class Chip8 {
 					V[0xF] = 0;
 				}
 				V[x] -= V[y];
+				pc = pc + 2;
 				break;
 			case 0x0006:
 				V[0xF] = (V[y] & 1);
 				V[x] = (V[y] >> 1);
+				pc = pc + 2;
 				break;
 			case 0x0007:
 				if(V[y] > V[x]) {
@@ -179,45 +178,98 @@ public class Chip8 {
 					V[0xF] = 1;
 				}
 				V[x] = V[y] - V[x];
+				pc = pc + 2;
 				break;
 			case 0x000E:
 				V[0xF] = V[y] >> 7;
 				V[x] = (V[y] << 1);
+				pc = pc + 2;
 				break;
 			}
 			break;
 		case 0x9000:
-			x = (opcode & 0x0F00) >> 8;
-			y = (opcode & 0x00F0) >> 4;
-			
 			if(V[x] != V[y]) {
 				//Skip
-				pc = pc + 2;
+				pc = pc + 4;
 			}
 			break;
 		case 0xA000:
-			nnn = opcode & 0x0FFF;
 			I = nnn;
+			pc = pc + 2;
 			break;
 		case 0xB000:
-			//TODO Implement BNNN
+			pc = (nnn + V[0]) & 0xFFF;
 			break;
 		case 0xC000:
-			//TODO Implement CXNN
+			int rand = NumberUtils.getRandomInRange(0, 255);
+			V[x] = rand & nn; 
+			pc = pc + 2;
 			break;
 		case 0xD000:
-			//TODO Implement CXNN
+			/*
+			 * TODO Implement DXYN
+			 * 
+			 * draw(VX, VY , n): Draw a sprite at coordinate VX, VY with a width of 8 pixels and height
+			 * of n pixels. Each row of 8 pixels is read as bit coded from memory location I. VF is set to 1
+			 * if any pixel is set from set to unset when drawn and 0 if it doesn't.
+			 */
 			break;
 		case 0xE000:
 			//TODO Implement CXNN
 			break;
 		case 0xF000:
-			//TODO Implement CXNN
+			switch (nn) {
+			case 0x0007:
+				V[x] = dt;
+				pc = pc + 2;
+				break;
+			case 0x000A:
+				/*
+				 * TODO Implement FX0A
+				 * 
+				 * Wait for key press and save key to V[x]
+				 */
+				break;
+			case 0x0015:
+				dt = V[x];
+				pc = pc + 2;
+				break;
+			case 0x0018:
+				st = V[x];
+				pc = pc + 2;
+				break;
+			case 0x001E:
+				I +=  V[x];
+				pc = pc + 2;
+				break;
+			case 0x0029:
+				I = V[x] * 0x5;
+				pc = pc + 2;
+				break;
+			case 0x0033:
+				memory.set(I, V[x] / 100);
+				memory.set(I + 1, (V[x] / 10) % 10);
+				memory.set(I + 1, (V[x] % 100) % 10);
+				pc = pc + 2;
+				break;
+			case 0x0055:
+				for(int i = 0; i < x; i++) {
+					memory.set(I + i, V[i]);
+				}
+				pc = pc + 2;
+				break;
+			case 0x0065:
+				for(int i = 0; i < x; i++) {
+					V[i] = memory.get(I + i);
+				}
+				pc = pc + 2;
+				break;
+			}
 			break;
+			default:
+				System.out.println("ERROR! Opcode not supported!");
 		}
-		//increment program counter by 2
-		pc = pc + 2;
-	}
+ 	}
 	
 	
 	
