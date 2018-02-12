@@ -7,7 +7,7 @@ import java.io.FileReader;
 
 public class FileIO {
 	
-	private static String fontSetLocation = "fontset.txt";
+	private static String fontSetLocation = "resources/fontset.txt";
 	
 	public static short[] getProgram(File f) {
 		short[] result = new short[(int) f.length()];
@@ -51,6 +51,8 @@ public class FileIO {
 			for(int i = 0; i < result.length; i++) {
 				result[i] = parseFullHex(fontSetArray[i]);
 			}
+			bfr.close();
+			fr.close();
 		}catch (Exception e) {
 			e.printStackTrace();
 		}

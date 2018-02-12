@@ -19,7 +19,7 @@ public class Chip8 {
 	private int opcode;
 	
 	private Memory memory = new Memory(Memory.MEMORY_4K);
-	private File program = new File("TETRIS.c8");
+	private File program = new File("resources/TETRIS.c8");
 	
 	//Registers
 	
