@@ -1,6 +1,7 @@
 package chip8.components;
 
 import java.io.File;
+import java.util.Stack;
 
 import chip8.utils.NumberUtils;
 
@@ -21,11 +22,12 @@ public class Chip8 {
 	private int opcode;
 	
 	private Memory memory = new Memory(Memory.MEMORY_4K);
-	private File program = new File("resources/TETRIS.c8");
+	private File program = new File("resources/particles.ch8");
 	//Registers
 	
 	private int V[] = new int[16];
-	private int stack[] = new int[16];
+	//Correct way to do this is to assign stack to memory region 0xEA0-0xEFF 
+	private Stack<Integer> stack = new Stack<Integer>();
 	private int sp;
 	private int I;
 	private int pc;
@@ -45,27 +47,27 @@ public class Chip8 {
 		I = 0;
 		sp = 0;
 		
-		
-		memory.set(pc, 0x80);
-		memory.set(pc+1, 0x16);
-		
-		V[0] = 0;
-		V[1] = 6;
-
-
-
-		//memory.loadProgram(program);
+		memory.loadProgram(program);
 	}
 	
-	public void emulateCycle() {				
+	public void emulateCycle() {
 		//Fetch		
-		opcode = memory.get(pc) << 8 | memory.get(pc+1);
+		opcode = NumberUtils.parseOpCode(memory.get(pc), memory.get(pc+1));
 		
 		//Decode and execute
-		
+
+		System.out.println("Executing: " + Integer.toHexString(opcode));
 		executeOpcode(opcode);
 						
-		//Update timers
+		//Update timers TODO: MUST BE SLOWED DOWN TO 60Hz
+		
+		if(dt > 0) --dt;
+		if(st > 0) {
+			if(st == 1) {
+				System.out.println("BEEP");
+				--st;
+			}
+		}
 	}
 	
 	public void registerDump() {
@@ -92,7 +94,12 @@ public class Chip8 {
 				//TODO Implement 00E0
 				break;
 			case 0xEE:
-				//TODO Implement 00EE
+				if(stack.isEmpty()) {
+					//TODO
+				}else {
+					pc = stack.pop();
+					sp--;
+				}
 				break;
 			}
 			break;
@@ -100,7 +107,9 @@ public class Chip8 {
 			pc = nnn;
 			break;
 		case 0x2000:
-			//TODO Implement 2NNN
+			sp++;
+			stack.push(pc);
+			pc = nnn;
 			break;
 		case 0x3000:
 			if(V[x] == nn) {
@@ -213,6 +222,9 @@ public class Chip8 {
 			 * of n pixels. Each row of 8 pixels is read as bit coded from memory location I. VF is set to 1
 			 * if any pixel is set from set to unset when drawn and 0 if it doesn't.
 			 */
+			
+			System.out.println("draw(" + Integer.toHexString(V[x]) + ", " + Integer.toHexString(V[y]) + ", " + Integer.toHexString(n) + ")");
+			pc = pc + 2;
 			break;
 		case 0xE000:
 			//TODO Implement CXNN

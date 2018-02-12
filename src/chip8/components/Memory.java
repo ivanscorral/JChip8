@@ -27,10 +27,10 @@ public class Memory {
 	public static int MEMORY_4K = 4096;
 	public static int PROGRAM_START_ADDR = 0x200;
 	
-	private short[] memory;	
+	private int[] memory;	
 	
 	public Memory(int size) {
-		memory = new short[size];
+		memory = new int[size];
 		loadFontSet();
 	}
 	
@@ -43,7 +43,7 @@ public class Memory {
 				
 	}
 	
-	public short get(int index) {
+	public int get(int index) {
 		return memory[index];
 	}
 	
