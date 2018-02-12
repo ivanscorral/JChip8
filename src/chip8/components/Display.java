@@ -10,6 +10,11 @@ public class Display {
 	 * |                   |
 	 * |(0,31)      (63,31)|
 	 * +-------------------+
+	 * 
+	 * Chip-8 draws graphics on screen through the use of sprites. 
+	 * A sprite is a group of bytes which are a binary representation of the desired picture.
+	 * 
+	 * 
 	 */
 
 }

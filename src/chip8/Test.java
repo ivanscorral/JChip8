@@ -1,13 +1,15 @@
 package chip8;
 
+import chip8.components.Chip8;
+
 public class Test {
 
 	public static void main(String[] args) {
 		
-		int binario = 6;
-		System.out.println(Integer.toBinaryString(binario) + ": " + binario);
-		binario = binario >> 1;
-		System.out.println(Integer.toBinaryString(binario) + ": " + binario);
+		Chip8 a = new Chip8();
+		a.registerDump();
+		a.emulateCycle();
+		a.registerDump();
 	}
 
 }
