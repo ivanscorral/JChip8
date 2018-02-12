@@ -7,7 +7,7 @@ public class Test {
 	public static void main(String[] args) {
 		
 		Chip8 a = new Chip8();
-		for(int i = 0; i < 200; i++) {
+		for(int i = 0; i < 500; i++) {
 			a.emulateCycle();
 			a.registerDump();
 		}

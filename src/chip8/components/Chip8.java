@@ -1,6 +1,7 @@
 package chip8.components;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Stack;
 
 import chip8.utils.NumberUtils;
@@ -77,6 +78,7 @@ public class Chip8 {
 		for(int i = 0; i < V.length; i++) {
 			System.out.println("V"+ Integer.toHexString(i).toUpperCase() + ": " + Integer.toHexString(V[i]));
 		}
+		System.out.println(Arrays.toString(stack.toArray()));
 	}
 	
 	private void executeOpcode(int opcode) {
@@ -97,8 +99,10 @@ public class Chip8 {
 				if(stack.isEmpty()) {
 					//TODO
 				}else {
-					pc = stack.pop();
-					sp--;
+					--sp;
+					pc = stack.get(sp);	
+					stack.remove(sp);
+					pc = pc + 2;
 				}
 				break;
 			}
@@ -107,8 +111,8 @@ public class Chip8 {
 			pc = nnn;
 			break;
 		case 0x2000:
-			sp++;
-			stack.push(pc);
+			stack.add(sp, pc);
+			++sp;
 			pc = nnn;
 			break;
 		case 0x3000:
@@ -227,7 +231,14 @@ public class Chip8 {
 			pc = pc + 2;
 			break;
 		case 0xE000:
-			//TODO Implement CXNN
+			switch (nn) {
+			case 0x9E:
+				//TODO Implement EX9E
+				break;
+			case 0xA1:
+				//TODO Implement EXA1
+				break;
+			}
 			break;
 		case 0xF000:
 			switch (nn) {
