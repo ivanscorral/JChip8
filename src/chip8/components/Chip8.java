@@ -249,7 +249,10 @@ public class Chip8 {
 				for(int xPix = 0; xPix < 8; xPix++) {
 					if((pixel & (0x80 >> xPix)) != 0) {
 						prevPixel = display.getPixel(x + xPix, y + yPix);
-						if(prevPixel == 1) V[0xF] = 1;
+						if(prevPixel == 1) {
+							System.out.println("overlapping...");
+							V[0xF] = 1;
+						}
 						prevPixel ^= 1;
 						display.setPixel(x + xPix,  y + yPix, prevPixel);
 					}
