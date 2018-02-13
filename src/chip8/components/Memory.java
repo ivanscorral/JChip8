@@ -35,7 +35,7 @@ public class Memory {
 	}
 	
 	public void loadProgram(File f) {
-		short[] programHex = FileIO.getProgram(f);
+		int[] programHex = FileIO.getProgram(f);
 		
 		for(int i = 0; i < programHex.length; i++) {
 			this.set(PROGRAM_START_ADDR + i, programHex[i]);
@@ -48,7 +48,7 @@ public class Memory {
 	}
 	
 	public void set(int index, int value) {
-		memory[index] = (short) value;
+		memory[index] = value;
 	}
 	
 	private void loadFontSet() {
@@ -57,7 +57,7 @@ public class Memory {
 		for(int i = 0; i < fontSet.length; i++) {
 			//double check
 			if(i < 0x200) {
-				memory[i] = (short) fontSet[i];
+				memory[i] = fontSet[i];
 			}
 		}
 	}
@@ -66,9 +66,9 @@ public class Memory {
 		for(int i = 0; i < memory.length; i++) {
 			if(memory[i] != 0) {
 				String hexString =  Integer.toHexString(memory[i]);
-				if(hexString.length() > 2) {
+				/*if(hexString.length() > 2) {
 					hexString = hexString.substring(hexString.length()-2, hexString.length());
-				}
+				}*/
 				System.out.println(Integer.toHexString(i) + " - " + hexString);
 			}
 		}

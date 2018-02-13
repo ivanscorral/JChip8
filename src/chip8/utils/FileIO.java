@@ -9,8 +9,8 @@ public class FileIO {
 	
 	private static String fontSetLocation = "resources/fontset.txt";
 	
-	public static short[] getProgram(File f) {
-		short[] result = new short[(int) f.length()];
+	public static int[] getProgram(File f) {
+		int[] result = new int[(int) f.length()];
 		int idx = 0;
 		try {
 			FileInputStream fi = new FileInputStream(f);
@@ -21,7 +21,8 @@ public class FileIO {
 			do{
 				len = fi.read(data);
 				for(int i = 0; i < len; i++, idx++) {
-					result[idx] = (short) (data[i] + 256);
+					//TODO Check why some values have an 1 on the left.
+					result[idx] = data[i] + 256;
 				}
 			}while(len != -1);
 			

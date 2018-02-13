@@ -49,6 +49,7 @@ public class Chip8 {
 		sp = 0;
 		
 		memory.loadProgram(program);
+		memory.dump();
 	}
 	
 	public void emulateCycle() {
