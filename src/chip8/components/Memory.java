@@ -27,10 +27,12 @@ public class Memory {
 	public static int MEMORY_4K = 4096;
 	public static int PROGRAM_START_ADDR = 0x200;
 	
-	private int[] memory;	
+	private int[] memory;
+	private boolean[] hasChanged;
 	
 	public Memory(int size) {
 		memory = new int[size];
+		hasChanged = new boolean[size];
 		loadFontSet();
 	}
 	
@@ -48,6 +50,7 @@ public class Memory {
 	}
 	
 	public void set(int index, int value) {
+		hasChanged[index] = true;
 		memory[index] = value;
 	}
 	
@@ -64,7 +67,7 @@ public class Memory {
 	
 	public void dump() {
 		for(int i = 0; i < memory.length; i++) {
-			if(memory[i] != 0) {
+			if(hasChanged[i]) {
 				String hexString =  Integer.toHexString(memory[i]);
 				/*if(hexString.length() > 2) {
 					hexString = hexString.substring(hexString.length()-2, hexString.length());

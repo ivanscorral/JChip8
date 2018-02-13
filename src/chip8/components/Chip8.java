@@ -23,9 +23,10 @@ public class Chip8 {
 	private int opcode;
 	
 	private Memory memory = new Memory(Memory.MEMORY_4K);
+	private Display display = new Display(this);
 	private File program = new File("resources/particles.ch8");
+		
 	//Registers
-	
 	private int V[] = new int[16];
 	//Correct way to do this is to assign stack to memory region 0xEA0-0xEFF 
 	private Stack<Integer> stack = new Stack<Integer>();
@@ -48,8 +49,9 @@ public class Chip8 {
 		I = 0;
 		sp = 0;
 		
+		display.clear();
 		memory.loadProgram(program);
-		memory.dump();
+		//memory.dump();
 	}
 	
 	public void emulateCycle() {
@@ -94,15 +96,16 @@ public class Chip8 {
 		case 0x0000:
 			switch(opcode & 0xFF) {
 			case 0xE0:
-				//TODO Implement 00E0
+				display.clear();
+				display.redraw();
+				pc = pc + 2;
 				break;
 			case 0xEE:
 				if(stack.isEmpty()) {
 					//TODO
 				}else {
 					--sp;
-					pc = stack.get(sp);	
-					stack.remove(sp);
+					pc = stack.get(sp);
 					pc = pc + 2;
 				}
 				break;
@@ -120,18 +123,24 @@ public class Chip8 {
 			if(V[x] == nn) {
 				//Skip
 				pc = pc + 4;
+			}else {
+				pc = pc + 2;
 			}
 			break;
 		case 0x4000:
 			if(V[x] != nn) {
 				//Skip
 				pc = pc + 4;
+			}else {
+				pc = pc + 2;
 			}
 			break;
 		case 0x5000:
 			if(V[x] == y) {
 				//Skip
 				pc = pc + 4;
+			}else {
+				pc = pc + 2;
 			}
 			break;
 		case 0x6000:
@@ -205,6 +214,8 @@ public class Chip8 {
 			if(V[x] != V[y]) {
 				//Skip
 				pc = pc + 4;
+			}else {
+				pc = pc + 2;
 			}
 			break;
 		case 0xA000:
@@ -228,16 +239,35 @@ public class Chip8 {
 			 * if any pixel is set from set to unset when drawn and 0 if it doesn't.
 			 */
 			
-			System.out.println("draw(" + Integer.toHexString(V[x]) + ", " + Integer.toHexString(V[y]) + ", " + Integer.toHexString(n) + ")");
+			int height = n;
+			int pixel;
+			int prevPixel;
+			V[0xF] = 0;
+		
+			for(int yPix = 0; yPix < height; yPix++) {
+				pixel = memory.get(I + yPix);
+				for(int xPix = 0; xPix < 8; xPix++) {
+					if((pixel & (0x80 >> xPix)) != 0) {
+						prevPixel = display.getPixel(x + xPix, y + yPix);
+						if(prevPixel == 1) V[0xF] = 1;
+						prevPixel ^= 1;
+						display.setPixel(x + xPix,  y + yPix, prevPixel);
+					}
+				}
+			}
+			
+			display.redraw();			
 			pc = pc + 2;
 			break;
 		case 0xE000:
 			switch (nn) {
 			case 0x9E:
 				//TODO Implement EX9E
+				pc = pc + 2;
 				break;
 			case 0xA1:
 				//TODO Implement EXA1
+				pc = pc + 2;
 				break;
 			}
 			break;
@@ -253,6 +283,7 @@ public class Chip8 {
 				 * 
 				 * Wait for key press and save key to V[x]
 				 */
+				pc = pc + 2;
 				break;
 			case 0x0015:
 				dt = V[x];

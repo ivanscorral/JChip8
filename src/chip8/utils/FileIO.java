@@ -22,7 +22,11 @@ public class FileIO {
 				len = fi.read(data);
 				for(int i = 0; i < len; i++, idx++) {
 					//TODO Check why some values have an 1 on the left.
-					result[idx] = data[i] + 256;
+					if(data[i] < 0) {
+						result[idx] = data[i] + 256;
+					}else {
+						result[idx] = data[i];
+					}
 				}
 			}while(len != -1);
 			
